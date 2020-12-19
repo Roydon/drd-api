@@ -1,13 +1,15 @@
-FROM node:lts-alpine
+FROM node:10
 
 RUN mkdir /backend
 
 WORKDIR /backend
 
-COPY . .
+COPY package*.json ./
 
 RUN npm install
 
+COPY . .
+
 EXPOSE 80
 
-CMD [ "node", "server", "." ]
+CMD [ "node", "server.js" ]
