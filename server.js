@@ -1,3 +1,5 @@
+require('dotenv').config()
+console.log(process.env.DB_URL);
 var express     = require('express');
 var app         = express();
 var bodyParser  = require('body-parser');
@@ -114,7 +116,7 @@ const PORT = 5000;
 
 // const dbURI = 'mongodb://root:zxcv1990@localhost:27017/doctor?authSource=admin';
 // const dbURI = 'mongodb://root:aRNs9qf6mFsk@https://staging.doctorsday.app/doctorsday?authSource=admin';
-const dbURI = 'mongodb://drdapi:aRNs9qf6mFsk@mongodb:27017/doctorsday';
+const dbURI = process.env.DB_URL;
 // const dbURI = 'mongodb://localhost/main10store';
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true ,useFindAndModify: false})
