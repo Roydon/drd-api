@@ -117,9 +117,10 @@ exports.loginDoctor = function(req, res)  {
       res.json({success: false, msg: 'Please check parameters.'});
     
     } else {
-      console.log(doctor.password);
-      if(password==doctor.password){
+      if(doctor && password==doctor.password){
         res.json({success: true, msg: 'successfully logged in',doctor:doctor});
+      } else {
+        res.json({success: false, msg: 'Invalid username and password',doctor:doctor});
       }
     }
   });
