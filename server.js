@@ -223,7 +223,7 @@ apiRoutes.post( '/addDoctor', function( req, res) {
         doctorId :randomstring2.generate(8),
         doctorName: doctor.doctorName,
         doctorMobile:doctor.doctorMobile,
-        emailId:doctor.doctorEmailId,
+        emailId: doctor.emailId || doctor.doctorEmailId,
         doctorAddress:doctor.doctorAddress,
         doctorSpeciality:doctor.doctorSpeciality,
         doctorExperience:doctor.doctorExperience,
