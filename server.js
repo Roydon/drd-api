@@ -1,26 +1,26 @@
 require('dotenv').config()
 console.log(process.env.DB_URL);
-var express     = require('express');
-var app         = express();
-var bodyParser  = require('body-parser');
+var express = require('express');
+var app = express();
+var bodyParser = require('body-parser');
 
-var morgan      = require('morgan');
-var mongoose    = require('mongoose');
+var morgan = require('morgan');
+var mongoose = require('mongoose');
 var methodOverride = require('method-override')
 var cors = require('cors');
-var config      = require('./config/database'); // get db config file
+var config = require('./config/database'); // get db config file
 
 var path = require('path');
-var port        = process.env.PORT || 80;
-var Doctor        = require('./app/models/doctor');
-var Patient        = require('./app/models/patient');
-var Clinic        = require('./app/models/clinic');
-var Case        = require('./app/models/case');
-var Slot        = require('./app/models/slot');
-var Appointment        = require('./app/models/appointment');
-var Prescription        = require('./app/models/prescription');
-var Feedback        = require('./app/models/feedback');
-var Search        = require('./app/models/search'); 
+var port = process.env.PORT || 80;
+var Doctor = require('./app/models/doctor');
+var Patient = require('./app/models/patient');
+var Clinic = require('./app/models/clinic');
+var Case = require('./app/models/case');
+var Slot = require('./app/models/slot');
+var Appointment = require('./app/models/appointment');
+var Prescription = require('./app/models/prescription');
+var Feedback = require('./app/models/feedback');
+var Search = require('./app/models/search');
 var randomstring = require("randomstring");
 var randomNumber = require('random-number');
 var nodemailer = require('nodemailer');
@@ -30,12 +30,12 @@ var User = require('./app/models/user');
 app.use(cors());
 
 
-  
+
 //insta credential
 
 //multer
 
-var multer = require( 'multer' );
+var multer = require('multer');
 
 
 
@@ -44,57 +44,56 @@ var multer = require( 'multer' );
 
 var moment = require('moment');
 
- 
-  
-  
 
 
-  
 
 
-function getNextSequence(name,fn) {
-    var retseq=0;
-   
-    Id.findOneAndUpdate({_id: name}, {$inc: { seq: 1 }}, {new: true}, function(err, doc){
-    if(err){
-        console.log("Something wrong when updating data!");
-    }
 
-  
-         retseq=doc.seq;
-       
+
+
+
+function getNextSequence(name, fn) {
+    var retseq = 0;
+
+    Id.findOneAndUpdate({ _id: name }, { $inc: { seq: 1 } }, { new: true }, function (err, doc) {
+        if (err) {
+            console.log("Something wrong when updating data!");
+        }
+
+
+        retseq = doc.seq;
+
         fn(retseq);
-     
-});
-   
+
+    });
+
 }
 
 
 
 
-Date.prototype.addHours = function(h) {    
-   this.setTime(this.getTime() + (h*60*60*1000)); 
-   return this;   
+Date.prototype.addHours = function (h) {
+    this.setTime(this.getTime() + (h * 60 * 60 * 1000));
+    return this;
 }
 
-Date.prototype.addDays = function(days)
-{
+Date.prototype.addDays = function (days) {
     var dat = new Date(this.valueOf());
     dat.setDate(dat.getDate() + days);
     return dat;
 }
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-var isEmpty=function (obj) {
+var isEmpty = function (obj) {
 
-    
+
     if (obj == null) return true;
 
-    
-    if (obj.length > 0)    return false;
-    if (obj.length === 0)  return true;
 
-    
+    if (obj.length > 0) return false;
+    if (obj.length === 0) return true;
+
+
     for (var key in obj) {
         if (hasOwnProperty.call(obj, key)) return false;
     }
@@ -106,22 +105,22 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(methodOverride());
 app.use(morgan('dev'));
- app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Authorization, Accept");
-  next();
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type,Authorization, Accept");
+    next();
 });
 
-const PORT = 5000;      
+const PORT = 5000;
 
 // const dbURI = 'mongodb://root:zxcv1990@localhost:27017/doctor?authSource=admin';
 // const dbURI = 'mongodb://root:aRNs9qf6mFsk@https://staging.doctorsday.app/doctorsday?authSource=admin';
 const dbURI = process.env.DB_URL;
 // const dbURI = 'mongodb://localhost/main10store';
 
-mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true ,useFindAndModify: false})
+mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false })
     .then((result) => {
-        app.listen(PORT,() => {
+        app.listen(PORT, () => {
             console.log("Application Started in Port " + PORT)
         })
     })
@@ -137,19 +136,19 @@ var apiRoutes = express.Router();
 
 app.use(express.static(__dirname + '/public'));
 app.use(express.static(__dirname + '/assets/images'));
- app.use(express.static('uploads'));
+app.use(express.static('uploads'));
 
 
-app.get('/', function(req, res) {
-     res.sendFile(path.join(__dirname, './public', 'index.html'));
-   
-    });
-        
+app.get('/', function (req, res) {
+    res.sendFile(path.join(__dirname, './public', 'index.html'));
+
+});
+
 // connect the api routes under /api/*
 app.use('/api', apiRoutes);
 
- 
-Array.prototype.contains = function(obj) {
+
+Array.prototype.contains = function (obj) {
     var i = this.length;
     while (i--) {
         if (this[i] == obj) {
@@ -159,39 +158,38 @@ Array.prototype.contains = function(obj) {
     return false;
 }
 
-apiRoutes.get('/users/', function(req, res){
-	 
-  
-    User.find(function(err, user) {
+apiRoutes.get('/users/', function (req, res) {
 
-            // if there is an error retrieving, send the error. nothing after res.send(err) will execute
-            if (err){
-                res.json(err);
-            }
-                
-    else
-        {
-              res.json({success: true,users: user}); // return all todos in JSON format
+
+    User.find(function (err, user) {
+
+        // if there is an error retrieving, send the error. nothing after res.send(err) will execute
+        if (err) {
+            res.json(err);
         }
-          
-        });
-    
+
+        else {
+            res.json({ success: true, users: user }); // return all todos in JSON format
+        }
+
+    });
+
 
 });
 
 
-apiRoutes.post( '/addSearchTerm', function( req, res, next ) {
+apiRoutes.post('/addSearchTerm', function (req, res, next) {
     var search = req.body;
     var searchData = {
         searchTerm: search.searchTerm,
         category: search.category
     }
-    Search.addSearch(searchData,function(err, searchData){
-        if(err){
-            res.json({success: false, msg: 'Failed to add Request'});
+    Search.addSearch(searchData, function (err, searchData) {
+        if (err) {
+            res.json({ success: false, msg: 'Failed to add Request' });
         }
-        else{
-            res.json({success:true,msg:'Search Added Successfully',data:searchData});
+        else {
+            res.json({ success: true, msg: 'Search Added Successfully', data: searchData });
         }
     });
 });
@@ -199,261 +197,269 @@ apiRoutes.post( '/addSearchTerm', function( req, res, next ) {
 
 // get search term
 
-apiRoutes.post('/getSearchTerm', function(req, res){                  
-                Search.find({},function(err, searchData) {          
-                    if (err){
-                        res.json({success: false, msg: 'Unable To Fetch Searchterm',res:err});
-                    }else{   
-                        res.json({success: true, msg: 'Searchterm Request Sent Successfully',data:searchData});
-                    }
-                });    
-            
-        }); 
+apiRoutes.post('/getSearchTerm', function (req, res) {
+    Search.find({}, function (err, searchData) {
+        if (err) {
+            res.json({ success: false, msg: 'Unable To Fetch Searchterm', res: err });
+        } else {
+            res.json({ success: true, msg: 'Searchterm Request Sent Successfully', data: searchData });
+        }
+    });
+
+});
 
 //add doctor api
 
-apiRoutes.post( '/addDoctor', function( req, res) {
+apiRoutes.post('/addDoctor', function (req, res) {
     var token = getToken(req.headers);
-    var userId=req.body.userId;
+    var userId = req.body.userId;
     var doctor = req.body;
     console.log(doctor)
     var password = req.body.password;
     var randomstring2 = require("randomstring");
     var doctorData = {
-        doctorId :randomstring2.generate(8),
+        doctorId: randomstring2.generate(8),
         doctorName: doctor.doctorName,
-        doctorMobile:doctor.doctorMobile,
+        doctorMobile: doctor.doctorMobile,
         emailId: doctor.emailId || doctor.doctorEmailId,
-        doctorAddress:doctor.doctorAddress,
-        doctorSpeciality:doctor.doctorSpeciality,
-        doctorExperience:doctor.doctorExperience,
-        password:password
+        doctorAddress: doctor.doctorAddress,
+        doctorSpeciality: doctor.doctorSpeciality,
+        doctorExperience: doctor.doctorExperience,
+        password: password
 
     }
-    Doctor.addDoctor(doctorData,function(err, doctorData){
-        if(err){
+    Doctor.addDoctor(doctorData, function (err, doctorData) {
+        if (err) {
             console.log(err);
-            res.json({success: false, msg: 'Failed to add Request'});
+            res.json({ success: false, msg: 'Failed to add Request' });
         }
-        else{
+        else {
             console.log(doctorData);
-            res.json({success:true,msg:'Doctor Added Successfully',data:doctorData});
+            res.json({ success: true, msg: 'Doctor Added Successfully', data: doctorData });
         }
     });
 });
 
 
-apiRoutes.post('/getDoctor', function(req, res){ 
-    var contactNum=req.body.contactNum;
-    if(contactNum!=undefined){
-        Doctor.findOne({ 'doctorMobile': contactNum }, function(err, doctor) {       
-            if(doctor){
-                res.json({success: true, msg: 'Doctor Request Sent Successfully',data:doctor});
-            }             
-             else{      
-                 res.json({success: false, msg: 'Unable To Fetch Doctor',res:err});
-                }                 
-            
-        });    
-}else{
-    res.json({success: false,msg:'No doctor with this Contact Number exist'});
-}
-     });
-
-
-     //Add Feedback
-
-     
-     apiRoutes.post('/addFeedback', function(req, res){ 
-        var userId=req.body.userId;
-        var userName=req.body.userName;
-        var doctorEmail=req.body.doctorEmail;
-        var feedbackValue=req.body.feedbackValue;
-        var feedback=req.body;
-        console.log(feedback);
-        if(userId!=undefined){
-            var feedbackData = {
-                'userId':userId,
-                'userName':userName,
-                'feedbackValue':feedbackValue
+apiRoutes.post('/getDoctor', function (req, res) {
+    var contactNum = req.body.contactNum;
+    if (contactNum != undefined) {
+        Doctor.findOne({ 'doctorMobile': contactNum }, function (err, doctor) {
+            if (doctor) {
+                res.json({ success: true, msg: 'Doctor Request Sent Successfully', data: doctor });
             }
-            Feedback.addFeedback(feedbackData,function(err, feedback){
-                if(err){
-                    res.json({success: false, msg: 'Failed to add Request'});
-                }
-                else{
-                  
-                    var transporter = nodemailer.createTransport({
-                        service: 'Gmail',
-                        auth: {
-                            user: 'your email address',
-                            pass: 'password'
-                        }
-                    });
-                    
-                    console.log('created');
-                    var mailOptions ={
-                        from: 'your email address',
-                        to: 'your email address',
-                        subject: 'Feedback from ' +userName,
-                        text: feedbackValue
-                    }
-                  
-                    transporter.sendMail(mailOptions, function(error, info){
-                        if (error) {
-                          console.log(error);
-                        } else {
-                            res.json({success: true,msg:'Feedback Sent.'})
-                        }
-                      });
-                  
-                }
-            }); 
-    }else{
-        res.json({success: false,msg:'No Userid found'});
+            else {
+                res.json({ success: false, msg: 'Unable To Fetch Doctor', res: err });
+            }
+
+        });
+    } else {
+        res.json({ success: false, msg: 'No doctor with this Contact Number exist' });
     }
-         });
+});
+
+
+//Add Feedback
+
+
+apiRoutes.post('/addFeedback', function (req, res) {
+    var userId = req.body.userId;
+    var userName = req.body.userName;
+    var doctorEmail = req.body.doctorEmail;
+    var feedbackValue = req.body.feedbackValue;
+    var feedback = req.body;
+    console.log(feedback);
+    if (userId != undefined) {
+        var feedbackData = {
+            'userId': userId,
+            'userName': userName,
+            'feedbackValue': feedbackValue
+        }
+        Feedback.addFeedback(feedbackData, function (err, feedback) {
+            if (err) {
+                res.json({ success: false, msg: 'Failed to add Request' });
+            }
+            else {
+
+                var transporter = nodemailer.createTransport({
+                    service: 'Gmail',
+                    auth: {
+                        user: 'your email address',
+                        pass: 'password'
+                    }
+                });
+
+                console.log('created');
+                var mailOptions = {
+                    from: 'your email address',
+                    to: 'your email address',
+                    subject: 'Feedback from ' + userName,
+                    text: feedbackValue
+                }
+
+                transporter.sendMail(mailOptions, function (error, info) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        res.json({ success: true, msg: 'Feedback Sent.' })
+                    }
+                });
+
+            }
+        });
+    } else {
+        res.json({ success: false, msg: 'No Userid found' });
+    }
+});
 
 
 
 
 // get doctor for patient api
 
-apiRoutes.post('/getDoc', function(req, res){ 
-        Doctor.find({},function(err, doctor) {          
-            if (err){
-                res.json({success: false, msg: 'Unable To Fetch Doctor',res:err});
-            }else{   
-                res.json({success: true, msg: 'Doctor Request Sent Successfully',data:doctor});
-            }
-        });  
+apiRoutes.post('/getDoc', function (req, res) {
+    Doctor.find({}, function (err, doctor) {
+        if (err) {
+            res.json({ success: false, msg: 'Unable To Fetch Doctor', res: err });
+        } else {
+            res.json({ success: true, msg: 'Doctor Request Sent Successfully', data: doctor });
+        }
+    });
 });
 
 
 
 //update doctor api
 
-apiRoutes.post('/updateDoctorProfile', function(req, res){
-   var doctorId=req.body.doctorId;   
-   var doctorName = req.body.doctorName;
-   var doctorAddress = req.body.doctorAddress;
-   var doctorMobile = req.body.doctorMobile;
-   var doctorAdhaarNumber = req.body.doctorAdhaarNumber;
-   var doctorPincode = req.body.doctorPincode;
-   var doctorGender = req.body.doctorGender    
-   if(doctorId){
-       Doctor.update({'_id':doctorId}, { $set:{
-           "doctorName":doctorName,
-           "doctorAddress":doctorAddress,
-           "doctorMobile":doctorMobile,
-           "doctorAdhaarNumber":doctorAdhaarNumber,
-           "doctorPincode":doctorPincode,
-           "doctorGender":doctorGender,
-       }}, function(err, numberAffected, rawResponse) {
-                   if(err){
-                   res.json({success: false,msg:'Doctor Failed To Update'});
-                   throw err;
-               }
-                   else{
+apiRoutes.post('/updateDoctorProfile', function (req, res) {
+    var doctorId = req.body.doctorId;
+    var doctorName = req.body.doctorName;
+    var doctorAddress = req.body.doctorAddress;
+    var doctorMobile = req.body.doctorMobile;
+    var doctorAdhaarNumber = req.body.doctorAdhaarNumber;
+    var doctorPincode = req.body.doctorPincode;
+    var doctorGender = req.body.doctorGender
+    if (doctorId) {
+        Doctor.update({ '_id': doctorId }, {
+            $set: {
+                "doctorName": doctorName,
+                "doctorAddress": doctorAddress,
+                "doctorMobile": doctorMobile,
+                "doctorAdhaarNumber": doctorAdhaarNumber,
+                "doctorPincode": doctorPincode,
+                "doctorGender": doctorGender,
+            }
+        }, function (err, numberAffected, rawResponse) {
+            if (err) {
+                res.json({ success: false, msg: 'Doctor Failed To Update' });
+                throw err;
+            }
+            else {
 
-                    Doctor.findOne({'_id':doctorId},function(err,doctor){
-                        if(err){
-                            res.json({success: false, msg: 'Failed to Update'});
-                        }else{
-                            res.json({success: true,msg:'Doctor Updated Successfully',data:doctor});
-                        }
-                    })
-                        
-                   }
-       });
-   
-   }
-   else{
-       res.json({success: false,msg:'Unable to fetch Token Authentication failed'});
-   }
+                Doctor.findOne({ '_id': doctorId }, function (err, doctor) {
+                    if (err) {
+                        res.json({ success: false, msg: 'Failed to Update' });
+                    } else {
+                        res.json({ success: true, msg: 'Doctor Updated Successfully', data: doctor });
+                    }
+                })
+
+            }
+        });
+
+    }
+    else {
+        res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
+    }
 });
 
 //update patient api
 
-apiRoutes.post('/updatePatientProfile', function(req, res){
- 
+apiRoutes.post('/updatePatientProfile', function (req, res) {
+
     var patientZipcode = req.body.patientZipcode;
-    if(patientZipcode != undefined && patientZipcode != null){
-        var userId=req.body.userId;
-   var patientFirstName = req.body.patientFirstName;
-   var patientLastName = req.body.patientLastName;
-   var patientMiddleName = req.body.patientMiddleName;
-   var patientAddress = req.body.patientAddress;
-   var patientEmailId = req.body.patientEmailId;
-   var patientGender = req.body.patientGender; 
-   var patientDob = req.body.patientDob;   
-   if(userId){
-       User.update({'_id':userId}, { $set:{
-           "patientFirstName":patientFirstName,
-           "patientLastName":patientLastName,
-           "patientMiddleName":patientMiddleName,
-           "patientAddress":patientAddress,
-           "emailId":patientEmailId,
-           "emailIdRegistered":true,
-            "patientZipcode":patientZipcode,
-           "patientGender":patientGender,
-           "patientDob":patientDob
-       }}, function(err, numberAffected, rawResponse) {
-                   if(err){
-                   res.json({success: false,msg:'Patient Failed To Update'});
-                   throw err;
-               }
-                   else{
+    if (patientZipcode != undefined && patientZipcode != null) {
+        var userId = req.body.userId;
+        var patientFirstName = req.body.patientFirstName;
+        var patientLastName = req.body.patientLastName;
+        var patientMiddleName = req.body.patientMiddleName;
+        var patientAddress = req.body.patientAddress;
+        var patientEmailId = req.body.patientEmailId;
+        var patientGender = req.body.patientGender;
+        var patientDob = req.body.patientDob;
+        if (true) {
+            User.update({ '_id': userId }, {
+                $set: {
+                    "patientFirstName": patientFirstName,
+                    "patientLastName": patientLastName,
+                    "patientMiddleName": patientMiddleName,
+                    "patientAddress": patientAddress,
+                    "emailId": patientEmailId,
+                    "emailIdRegistered": true,
+                    "patientZipcode": patientZipcode,
+                    "patientGender": patientGender,
+                    "patientDob": patientDob,
+                    "contactNum": req.body.contactNum
+                }
+            }, { upsert : true },  function (err, numberAffected, rawResponse) {
+                if (err) {
+                    res.json({ success: false, msg: 'Patient Failed To Update' });
+                    throw err;
+                }
+                else {
 
-                    User.findOne({'_id':userId},function(err,user){
-                        if(err){
-                            res.json({success: false, msg: 'Failed to Update'});
-                        }else{
-                            res.json({success: true,msg:'Patient Updated Successfully',data:user});
+                    User.findOne({ "contactNum": req.body.contactNum }, function (err, user) {
+                        if (err) {
+                            res.json({ success: false, msg: 'Failed to Update' });
+                        } else {
+                            res.json({ success: true, msg: 'Patient Updated Successfully', data: user });
                         }
                     })
-                        
-                       
-                   }
-       });
-   
-   }
-   else{
-       res.json({success: false,msg:'Unable to fetch Token Authentication failed'});
-   }
-    }else{
-        var userId=req.body.userId;
+
+
+                }
+            });
+
+        }
+        else {
+            res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
+        }
+    } else {
+        var userId = req.body.userId;
         var patientName = req.body.patientName;
-        var patientDob = req.body.patientDob; 
-   if(userId){
-       User.update({'_id':userId}, { $set:{
-           "patientName":patientName,
-           "patientDob":patientDob
-       }}, function(err, numberAffected, rawResponse) {
-                   if(err){
-                   res.json({success: false,msg:'Patient Failed To Update'});
-                   throw err;
-               }
-                   else{
+        var patientDob = req.body.patientDob;
+        if (true) {
+            User.update({ '_id': userId }, {
+                $set: {
+                    "patientName": patientName,
+                    "patientDob": patientDob,
+                    "contactNum": req.body.contactNum
+                }
+            }, { upsert : true },   function (err, numberAffected, rawResponse) {
+                if (err) {
+                    res.json({ success: false, msg: 'Patient Failed To Update' });
+                    throw err;
+                }
+                else {
 
-                    User.findOne({'_id':userId},function(err,user){
-                        if(err){
-                            res.json({success: false, msg: 'Failed to Update'});
-                        }else{
-                            res.json({success: true,msg:'Patient Updated Successfully',data:user});
+                    User.findOne({ "contactNum": req.body.contactNum }, function (err, user) {
+                        if (err) {
+                            res.json({ success: false, msg: 'Failed to Update' });
+                        } else {
+                            res.json({ success: true, msg: 'Patient Updated Successfully', data: user });
                         }
                     })
-                        
-                       
-                   }
-       });
-   
-   }
-   else{
-       res.json({success: false,msg:'Unable to fetch Token Authentication failed'});
-   }
+
+
+                }
+            });
+
+        }
+        else {
+            res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
+        }
     }
-   
+
 });
 
 
@@ -461,112 +467,114 @@ apiRoutes.post('/updatePatientProfile', function(req, res){
 
 // get patient api
 
-apiRoutes.post('/getPatient', function(req, res){ 
-    var contactNum=req.body.contactNum;
-    if(contactNum!=undefined){
-        User.findOne({ 'contactNum': contactNum }, function(err, user) {       
-            if(user){
-                res.json({success: true, msg: 'Patient Request Sent Successfully',data:user});
-            }             
-             else{      
-                 res.json({success: false, msg: 'Unable To Fetch Patient',res:err});
-                }                 
-            
-        });    
-}else{
-    res.json({success: false,msg:'No User with this Contact Number exist'});
-}
-     });
+apiRoutes.post('/getPatient', function (req, res) {
+    var contactNum = req.body.contactNum;
+    if (contactNum != undefined) {
+        User.findOne({ 'contactNum': contactNum }, function (err, user) {
+            if (user) {
+                res.json({ success: true, msg: 'Patient Request Sent Successfully', data: user });
+            }
+            else {
+                res.json({ success: false, msg: 'Unable To Fetch Patient', res: err });
+            }
+
+        });
+    } else {
+        res.json({ success: false, msg: 'No User with this Contact Number exist' });
+    }
+});
 
 
 // appointment api
 
-apiRoutes.post( '/bookAppointment',  function( req, res, next ) {
+apiRoutes.post('/bookAppointment', function (req, res, next) {
 
     var appointment = req.body;
-    var userId=appointment.patienId;
-    var slotArray = JSON.parse(appointment.slotArray); 
+    var userId = appointment.patienId;
+    var slotArray = JSON.parse(appointment.slotArray);
 
-    User.findOne({'_id':userId},function(err,user){
-        if(err){
+    User.findOne({ '_id': userId }, function (err, user) {
+        if (err) {
 
-        }else{
-        
-          
-            Slot.findOneAndUpdate({'clinicId':appointment.clinicId,'date':appointment.appointmentDate},{ $set:{
-                "slotTimings":slotArray
-                
-            }}, function(err, numberAffected, rawResponse,clinicData) {
-                if(err){
-        
-                }else{
+        } else {
+
+
+            Slot.findOneAndUpdate({ 'clinicId': appointment.clinicId, 'date': appointment.appointmentDate }, {
+                $set: {
+                    "slotTimings": slotArray
+
+                }
+            }, function (err, numberAffected, rawResponse, clinicData) {
+                if (err) {
+
+                } else {
                     var randomstring2 = require("randomstring");
                     var appointmentData = {
-                     
-                        appointmentId:randomstring2.generate(5),
-                        appointmentDate:appointment.appointmentDate,
-                        clinicId:appointment.clinicId,
-                        clinicName:appointment.clinicName,
-                        clinicAddress:appointment.clinicAddress,
-                        doctorId:appointment.doctorId,
+
+                        appointmentId: randomstring2.generate(5),
+                        appointmentDate: appointment.appointmentDate,
+                        clinicId: appointment.clinicId,
+                        clinicName: appointment.clinicName,
+                        clinicAddress: appointment.clinicAddress,
+                        doctorId: appointment.doctorId,
                         doctorName: appointment.doctorName,
-                        doctorMobile:appointment.doctorMobile,
-                        patientId:appointment.patientId,
+                        doctorMobile: appointment.doctorMobile,
+                        patientId: appointment.patientId,
                         patientFirstName: appointment.patientFirstName,
                         patientMiddleName: appointment.patientMiddleName,
                         patientLastName: appointment.patientLastName,
-                        patientMobile:appointment.patientMobile,
-                        appointmentStartTime:appointment.appointmentStartTime,  
-                        appointmentEndTime:appointment.appointmentEndTime,
-                        isOnlineAppointment:appointment.isOnlineAppointment
+                        patientMobile: appointment.patientMobile,
+                        appointmentStartTime: appointment.appointmentStartTime,
+                        appointmentEndTime: appointment.appointmentEndTime,
+                        isOnlineAppointment: appointment.isOnlineAppointment
                     };
-                    
-                
-                    Appointment.addAppointment(appointmentData,function(err, appointmentData){
-                        if(err){
-                            res.json({success: false, msg: 'Failed to add Request'});
+
+
+                    Appointment.addAppointment(appointmentData, function (err, appointmentData) {
+                        if (err) {
+                            res.json({ success: false, msg: 'Failed to add Request' });
                         }
-                        else{
-                            var allAppointment=[];
-                            for(var i=0;i<=appointmentData.length;i++){
-                                var date=appointmentData[i].appointmentDate;
-                                var appDate=moment(date).format("DD-MM-YYYY");
-                                appointmentData[i].appStyleDate=appDate;
+                        else {
+                            var allAppointment = [];
+                            for (var i = 0; i <= appointmentData.length; i++) {
+                                var date = appointmentData[i].appointmentDate;
+                                var appDate = moment(date).format("DD-MM-YYYY");
+                                appointmentData[i].appStyleDate = appDate;
                                 allAppointment.push(appointmentData[i]);
                             }
-                            res.json({success:true,msg:'Appointment Booked Successfully',data:appointmentData});
+                            res.json({ success: true, msg: 'Appointment Booked Successfully', data: appointmentData });
 
                             // var userFcm = slotDetails.userFcm;
-// axios
-// .post('https://fcm.googleapis.com/fcm/send', {
-//   "notification":{
-//     "title":"Appointment Booked",
-//     "body":appointment.patientName +" has booked appointment for "+appointment.appointmentDate,
-//     "sound":"default",
-//     "click_action":"FCM_PLUGIN_ACTIVITY",
-//     "icon":"fcm_push_icon"
-//   },
-//   "data":{
- 
-//     "status":txStatus
-//   },
-//     "to":doctorFcm,
-//     "priority":"high",
-//     "restricted_package_name":""
-// },
-// {
-//   headers: {
-//    'Content-Type':'application/json',
-//     'Authorization': 'key=AAAAc4oA-Sk:APA91bEHL3E1p_e9DS62Y2bdIbtVlguJS7Kp-ge897NEgtlP3zouO1mMdpnacS1RQ7Q8krlMtdYah2zK_gqqWkYAeMC6utpXkaYAR-y_k5ghJ8laOAKYzyTG6NAESq1bTeFfFABTnYBb' 
-//   }
-// })
-// .then(res => {
-//   console.log(`statusCode: ${res.statusCode}`)
-//   console.log(res)
-// })
-// .catch(error => {
-//   console.error(error)
-// })
+                            // axios
+                            // .post('https://fcm.googleapis.com/fcm/send', {
+                            //   "notification":{
+                            //     "title":"Appointment Booked",
+                            //     "body":appointment.patientName +" has booked appointment for "+appointment.appointmentDate,
+                            //     "sound":"default",
+                            //     "click_action":"FCM_PLUGIN_ACTIVITY",
+                            //     "icon":"fcm_push_icon"
+                            //   },
+                            //   "data":{
+
+                            //     "status":txStatus
+                            //   },
+                            //     "to":doctorFcm,
+                            //     "priority":"high",
+                            //     "restricted_package_name":""
+                            // },
+                            // {
+                            //   headers: {
+                            //    'Content-Type':'application/json',
+                            //     'Authorization': 'key=AAAAc4oA-Sk:APA91bEHL3E1p_e9DS62Y2bdIbtVlguJS7Kp-ge897NEgtlP3zouO1mMdpnacS1RQ7Q8krlMtdYah2zK_gqqWkYAeMC6utpXkaYAR-y_k5ghJ8laOAKYzyTG6NAESq1bTeFfFABTnYBb' 
+                            //   }
+                            // })
+                            // .then(res => {
+                            //   console.log(`statusCode: ${res.statusCode}`)
+                            //   console.log(res)
+                            // })
+                            // .catch(error => {
+                            //   console.error(error)
+                            // })
 
                         }
                     });
@@ -574,83 +582,87 @@ apiRoutes.post( '/bookAppointment',  function( req, res, next ) {
             })
         }
     })
-// }
-// })
-   
+    // }
+    // })
+
 
 });
 
 
 // update and book appintment api
 
-apiRoutes.post( '/newUserAppointment',  function( req, res, next ) {
+apiRoutes.post('/newUserAppointment', function (req, res, next) {
 
     var appointment = req.body;
-    var userId=appointment.patienId;
-    var slotArray=[]; 
-    var slotArray =  JSON.parse(appointment.slotArray);;
-    User.findOne({'_id':userId},function(err,user){
-        if(err){
-            res.json({success: false, msg: 'No User exist'});
-        }else{
+    var userId = appointment.patienId;
+    var slotArray = [];
+    var slotArray = JSON.parse(appointment.slotArray);;
+    User.findOne({ '_id': userId }, function (err, user) {
+        if (err) {
+            res.json({ success: false, msg: 'No User exist' });
+        } else {
 
-            User.findOneAndUpdate({'._id':userId},{ $set:{
-                "patientFirstName":appointment.patientFirstName,
-                "patientMiddleName":appointment.patientMiddleName,
-                "patientLastName":appointment.patientLastName,
-                "patientDob":appointment.patientDob
-                
-            }}, function(err, numberAffected, rawResponse,userData) {
-                if(err){
-                    res.json({success: false, msg: 'Failed to Update User'});
-        
-                }else{
-                    Slot.findOneAndUpdate({'clinicId':appointment.clinicId,'date':appointment.appointmentDate},{ $set:{
-                        "slotTimings":slotArray
-                        
-                    }}, function(err,numberAffected, rawResponse,clinicData) {
-                        if(err){
-                            
-                        }else{
+            User.findOneAndUpdate({ '._id': userId }, {
+                $set: {
+                    "patientFirstName": appointment.patientFirstName,
+                    "patientMiddleName": appointment.patientMiddleName,
+                    "patientLastName": appointment.patientLastName,
+                    "patientDob": appointment.patientDob
+
+                }
+            }, function (err, numberAffected, rawResponse, userData) {
+                if (err) {
+                    res.json({ success: false, msg: 'Failed to Update User' });
+
+                } else {
+                    Slot.findOneAndUpdate({ 'clinicId': appointment.clinicId, 'date': appointment.appointmentDate }, {
+                        $set: {
+                            "slotTimings": slotArray
+
+                        }
+                    }, function (err, numberAffected, rawResponse, clinicData) {
+                        if (err) {
+
+                        } else {
                             var randomstring2 = require("randomstring");
-                            var appointmentData = {                           
-                                appointmentId:randomstring2.generate(5),
-                                appointmentDate:appointment.appointmentDate,
-                                clinicId:appointment.clinicId,
-                                clinicName:appointment.clinicName,
-                                clinicAddress:appointment.clinicAddress,
-                                doctorId:appointment.doctorId,
+                            var appointmentData = {
+                                appointmentId: randomstring2.generate(5),
+                                appointmentDate: appointment.appointmentDate,
+                                clinicId: appointment.clinicId,
+                                clinicName: appointment.clinicName,
+                                clinicAddress: appointment.clinicAddress,
+                                doctorId: appointment.doctorId,
                                 doctorName: appointment.doctorName,
-                                doctorMobile:appointment.doctorMobile,
-                                patientId:appointment.patientId,
-                                patientFirstName:appointment.patientFirstName,
-                                patientMiddleName:appointment.patientMiddleName,
-                                patientLastName:appointment.patientLastName,
-                                patientMobile:appointment.patientMobile,
-                                appointmentStartTime:appointment.appointmentStartTime,  
-                                appointmentEndTime:appointment.appointmentEndTime,
-                                isOnlineAppointment:appointment.isOnlineAppointment
+                                doctorMobile: appointment.doctorMobile,
+                                patientId: appointment.patientId,
+                                patientFirstName: appointment.patientFirstName,
+                                patientMiddleName: appointment.patientMiddleName,
+                                patientLastName: appointment.patientLastName,
+                                patientMobile: appointment.patientMobile,
+                                appointmentStartTime: appointment.appointmentStartTime,
+                                appointmentEndTime: appointment.appointmentEndTime,
+                                isOnlineAppointment: appointment.isOnlineAppointment
                             };
-                            Appointment.addAppointment(appointmentData,function(err, appointmentData){
-                                if(err){
-                                    res.json({success: false, msg: 'Failed to add Request'});
+                            Appointment.addAppointment(appointmentData, function (err, appointmentData) {
+                                if (err) {
+                                    res.json({ success: false, msg: 'Failed to add Request' });
                                 }
-                                else{
-                                    var allAppointment=[];
-                                    for(var i=0;i<=appointmentData.length;i++){
-                                        var date=appointmentData[i].appointmentDate;
-                                        var appDate=moment(date).format("DD-MM-YYYY");
-                                        appointmentData[i].appStyleDate=appDate;
+                                else {
+                                    var allAppointment = [];
+                                    for (var i = 0; i <= appointmentData.length; i++) {
+                                        var date = appointmentData[i].appointmentDate;
+                                        var appDate = moment(date).format("DD-MM-YYYY");
+                                        appointmentData[i].appStyleDate = appDate;
                                         allAppointment.push(appointmentData[i]);
                                     }
-                                    res.json({success:true,msg:'Appointment Booked Successfully',data:appointmentData});
+                                    res.json({ success: true, msg: 'Appointment Booked Successfully', data: appointmentData });
                                 }
                             });
                         }
                     })
                 }
             });
-           
+
         }
     })
 });
@@ -659,85 +671,84 @@ apiRoutes.post( '/newUserAppointment',  function( req, res, next ) {
 
 // create slot api
 
-apiRoutes.post( '/createSlot',  function( req, res, next ) {
-    var slotArr = JSON.parse(req.body.slotDetails);   
-    var docterId=req.body.docterId;
+apiRoutes.post('/createSlot', function (req, res, next) {
+    var slotArr = JSON.parse(req.body.slotDetails);
+    var docterId = req.body.docterId;
     var slotArrLength = slotArr.length;
-    for(var i=0;i<slotArr.length;i++){
-        if(i==slotArr.length - 1){
-            var clinicId=slotArr[i].clinicId;
-            var date=slotArr[i].date;
-            var day=slotArr[i].day;
-            var slotTimings=slotArr[i].slotTimings;
+    for (var i = 0; i < slotArr.length; i++) {
+        if (i == slotArr.length - 1) {
+            var clinicId = slotArr[i].clinicId;
+            var date = slotArr[i].date;
+            var day = slotArr[i].day;
+            var slotTimings = slotArr[i].slotTimings;
             var slotData = {
-                doctorId:docterId,
-                clinicId:clinicId,
-                date:date,
-                day:day,
-                slotTimings:slotTimings
-            };      
-            Slot.addSlot(slotData,function(err, slotData){
-                if(err){
-                    res.json({success:false,data:err});
-                }
-                else{
-                    res.json({success:true,data:slotData});
-                }
-            });            
-        }else{
-            var clinicId=slotArr[i].clinicId;
-            var date=slotArr[i].date;
-            var day=slotArr[i].day;
-            var slotTimings=slotArr[i].slotTimings;
-            var slotData = {
-                doctorId:docterId,
-                clinicId:clinicId,
-                date:date,
-                day:day,
-                slotTimings:slotTimings
+                doctorId: docterId,
+                clinicId: clinicId,
+                date: date,
+                day: day,
+                slotTimings: slotTimings
             };
-        
-            Slot.addSlot(slotData,function(err, slotData){
-                if(err){
-                    res.json({success:false,data:err});
+            Slot.addSlot(slotData, function (err, slotData) {
+                if (err) {
+                    res.json({ success: false, data: err });
                 }
-                else{
-                    if(i==slotArr.length-1){
-                        res.json({success:true,data:slotData});
-                    }    
+                else {
+                    res.json({ success: true, data: slotData });
                 }
-            });  
+            });
+        } else {
+            var clinicId = slotArr[i].clinicId;
+            var date = slotArr[i].date;
+            var day = slotArr[i].day;
+            var slotTimings = slotArr[i].slotTimings;
+            var slotData = {
+                doctorId: docterId,
+                clinicId: clinicId,
+                date: date,
+                day: day,
+                slotTimings: slotTimings
+            };
+
+            Slot.addSlot(slotData, function (err, slotData) {
+                if (err) {
+                    res.json({ success: false, data: err });
+                }
+                else {
+                    if (i == slotArr.length - 1) {
+                        res.json({ success: true, data: slotData });
+                    }
+                }
+            });
         }
-       
+
     }
 
 });
 
 // get slot api
 
-apiRoutes.post('/getSlot' , function(req,res){
-    var clinicId=req.body.clinicId;
-    var slotDate=req.body.slotDate;
+apiRoutes.post('/getSlot', function (req, res) {
+    var clinicId = req.body.clinicId;
+    var slotDate = req.body.slotDate;
 
-    if(clinicId){
-        Slot.findOne({'clinicId':clinicId,'date':slotDate},function(err,slot)       
-        {
-            if(err){
+    if (clinicId) {
+        Slot.findOne({ 'clinicId': clinicId, 'date': slotDate }, function (err, slot) {
+            if (err) {
                 console.log(err);
-            }else{
-                res.json({success:true,data:slot});
-            }           
+            } else {
+                res.json({ success: true, data: slot });
+            }
         });
     }
-    else{
-        res.json({success: false,msg:'Unable to fetch Token Authentication failed'});
+    else {
+        res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
     }
 });
 
 
 // Cancel Appointment api
 
-apiRoutes.post('/cancelAppointment', function(req, res){
+apiRoutes.post('/cancelAppointment', function (req, res) {
     var appointmentId = req.body.appointmentId;
     var patientId = req.body.patientId;
     var doctorName = req.body.doctorName;
@@ -745,306 +756,307 @@ apiRoutes.post('/cancelAppointment', function(req, res){
     var slotId = req.body.slotId;
     var slotArray = JSON.parse(req.body.slotArray);
 
-    if(slotId){
-        Slot.findOneAndUpdate({'_id': slotId}, { $set:{
-            "slotTimings":slotArray 
-            
-        }}, function(err, numberAffected, rawResponse,slotData) {
-                    if(err){
-                    res.json({success: false,msg:'Slot Failed To Update'});
-           
-                }
-                    else{
-                        if(appointmentId){
-                            Appointment.update({'_id': appointmentId}, { $set:{
-                                "isCancelled":true 
-                                
-                            }}, function(err, numberAffected, rawResponse,appointmentData) {
-                                        if(err){
+    if (slotId) {
+        Slot.findOneAndUpdate({ '_id': slotId }, {
+            $set: {
+                "slotTimings": slotArray
 
-                                        res.json({success: false,msg:'Appointment Failed To Update'});
-                                        throw err;
-                                    }
-                                        else{
-//                                             axios
-// .post('https://fcm.googleapis.com/fcm/send', {
-//   "notification":{
-//     "title":"Appointment Cancelled",
-//     "body":'Dr '+doctorName +" has cancelled appointment for "+appointmentDate,
-//     "sound":"default",
-//     "click_action":"FCM_PLUGIN_ACTIVITY",
-//     "icon":"fcm_push_icon"
-//   },
-//   "data":{
- 
-//     "status":txStatus
-//   },
-//     "to":patientFcm,
-//     "priority":"high",
-//     "restricted_package_name":""
-// },
-// {
-//   headers: {
-//    'Content-Type':'application/json',
-//     'Authorization': 'key=AAAAFtFf7TE:APA91bHdrJFrB9tKEtSAzo2XbDAzBTWXDS-HRca1xlxAHWW1wim7a_f_LY3SPS6PlRKHN1BdVvxFhqOxT5zUCSNZ1j51V4JXWfFEH8NkbjtRy0IwWWfYEVm9GwCFYppYrJxpViMn070h' 
-//   }
-// })
-// .then(res => {
-//   console.log(`statusCode: ${res.statusCode}`)
-//   console.log(res)
-// })
-// .catch(error => {
-//   console.error(error)
-// })
-                                            res.json({success: true,msg:'Appointment Updated Successfully',data:appointmentData,slotData:slotData});
-                                        }
-                            });
-                    
-                          
-                         
-                           
+            }
+        }, function (err, numberAffected, rawResponse, slotData) {
+            if (err) {
+                res.json({ success: false, msg: 'Slot Failed To Update' });
+
+            }
+            else {
+                if (appointmentId) {
+                    Appointment.update({ '_id': appointmentId }, {
+                        $set: {
+                            "isCancelled": true
+
                         }
-                        else{
-                            res.json({success: false,msg:'No appointment Id'});
+                    }, function (err, numberAffected, rawResponse, appointmentData) {
+                        if (err) {
+
+                            res.json({ success: false, msg: 'Appointment Failed To Update' });
+                            throw err;
                         }
-                  
-                    }
-        }); 
-    }else{
-        res.json({success: false,msg:'No slot id'});
+                        else {
+                            //                                             axios
+                            // .post('https://fcm.googleapis.com/fcm/send', {
+                            //   "notification":{
+                            //     "title":"Appointment Cancelled",
+                            //     "body":'Dr '+doctorName +" has cancelled appointment for "+appointmentDate,
+                            //     "sound":"default",
+                            //     "click_action":"FCM_PLUGIN_ACTIVITY",
+                            //     "icon":"fcm_push_icon"
+                            //   },
+                            //   "data":{
+
+                            //     "status":txStatus
+                            //   },
+                            //     "to":patientFcm,
+                            //     "priority":"high",
+                            //     "restricted_package_name":""
+                            // },
+                            // {
+                            //   headers: {
+                            //    'Content-Type':'application/json',
+                            //     'Authorization': 'key=AAAAFtFf7TE:APA91bHdrJFrB9tKEtSAzo2XbDAzBTWXDS-HRca1xlxAHWW1wim7a_f_LY3SPS6PlRKHN1BdVvxFhqOxT5zUCSNZ1j51V4JXWfFEH8NkbjtRy0IwWWfYEVm9GwCFYppYrJxpViMn070h' 
+                            //   }
+                            // })
+                            // .then(res => {
+                            //   console.log(`statusCode: ${res.statusCode}`)
+                            //   console.log(res)
+                            // })
+                            // .catch(error => {
+                            //   console.error(error)
+                            // })
+                            res.json({ success: true, msg: 'Appointment Updated Successfully', data: appointmentData, slotData: slotData });
+                        }
+                    });
+
+
+
+
+                }
+                else {
+                    res.json({ success: false, msg: 'No appointment Id' });
+                }
+
+            }
+        });
+    } else {
+        res.json({ success: false, msg: 'No slot id' });
     }
-    
-// }
-// })
+
+    // }
+    // })
 
 });
 
 // get all Doctor appointment
 
-apiRoutes.post('/getAllDoctorAppointment' , function(req,res){
+apiRoutes.post('/getAllDoctorAppointment', function (req, res) {
 
-    var doctorId=req.body.doctorId;
-    if(doctorId){
-        Appointment.find({doctorId:doctorId},function(err,appointment)
-        
-        {
-            if(err){
-                res.json({success:false,msg:'Unable to fetch appointment'});
-            }else{
-                res.json({success:true,data:appointment});
+    var doctorId = req.body.doctorId;
+    if (doctorId) {
+        Appointment.find({ doctorId: doctorId }, function (err, appointment) {
+            if (err) {
+                res.json({ success: false, msg: 'Unable to fetch appointment' });
+            } else {
+                res.json({ success: true, data: appointment });
             }
-            
+
         });
     }
-    else{
-        res.json({success: false,msg:'Unable to fetch Token Authentication failed'});
+    else {
+        res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
     }
 });
 
 // get all Patient appointment
 
-apiRoutes.post('/getAllPatientAppointment' , function(req,res){
+apiRoutes.post('/getAllPatientAppointment', function (req, res) {
 
-    var patientId=req.body.patientId;
-    if(patientId){
-        Appointment.find({patientId:patientId},function(err,appointment)
-        
-        {
-            if(err){
-                res.json({success:false,msg:'Unable to fetch appointment'});
-            }else{
-                res.json({success:true,data:appointment});
+    var patientId = req.body.patientId;
+    if (patientId) {
+        Appointment.find({ patientId: patientId }, function (err, appointment) {
+            if (err) {
+                res.json({ success: false, msg: 'Unable to fetch appointment' });
+            } else {
+                res.json({ success: true, data: appointment });
             }
-            
+
         });
     }
-    else{
-        res.json({success: false,msg:'Unable to fetch Token Authentication failed'});
+    else {
+        res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
     }
 });
 
 
 // clinic api
 
-apiRoutes.post( '/addClinic',  function( req, res, next ) {
-    var doctorId=req.body.doctorId;
+apiRoutes.post('/addClinic', function (req, res, next) {
+    var doctorId = req.body.doctorId;
     var clinic = req.body;
     var randomstring2 = require("randomstring");
     var clinicData = {
-        clinicId :randomstring2.generate(8),
-        clinicName:clinic.clinicName,
-        clinicAddress:clinic.clinicAddress,
-        doctorId:clinic.doctorId,
+        clinicId: randomstring2.generate(8),
+        clinicName: clinic.clinicName,
+        clinicAddress: clinic.clinicAddress,
+        doctorId: clinic.doctorId,
         doctorName: clinic.doctorName,
-        doctorMobile:clinic.doctorMobile
+        doctorMobile: clinic.doctorMobile
     }
 
-    Clinic.addClinic(clinicData,function(err, clinic){
-        if(err){
-            res.json({success: false, msg: 'Failed to add Request'});
+    Clinic.addClinic(clinicData, function (err, clinic) {
+        if (err) {
+            res.json({ success: false, msg: 'Failed to add Request' });
         }
-        else{
-            res.json({success:true,msg:'Clinic Added Successfully',data:clinic});
+        else {
+            res.json({ success: true, msg: 'Clinic Added Successfully', data: clinic });
         }
     });
 });
 
 //Get Slots
-apiRoutes.post( '/getClinicSlot',  function( req, res, next ) {
+apiRoutes.post('/getClinicSlot', function (req, res, next) {
 
     var clinicId = req.body.clinicId;
-    var isDoctor= req.body.isDoctor;
-   if(isDoctor){
-    var doctorId=req.body.doctorId;
-    console.log(doctorId);
-       Doctor.findOne({'_id':doctorId},function(err,doctor){
-           if(err){
-            res.json({success: false, msg: 'User Not Authorized'});
-           }else{
-            Clinic.findOne({_id:clinicId},function(err, clinic){
-                if(err){
-                    res.json({success: false, msg: 'Failed to Fetch Clinic Request'});
-           
-                }
-                else{
-                    res.json({success:true,msg:'Clinic Fetched Successfully',data:clinic});
-                }
-            });
-           }
-       })
-   }else{
-    var userId=req.body.userId;
-    User.findOne({'_id':userId},function(err,user){
-        if(err){
-         res.json({success: false, msg: 'User Not Authorized'});
-        }else{
-         Clinic.findOne({_id:clinicId},function(err, clinic){
-             if(err){
-                 res.json({success: false, msg: 'Failed to Fetch Clinic Request'});
+    var isDoctor = req.body.isDoctor;
+    if (isDoctor) {
+        var doctorId = req.body.doctorId;
+        console.log(doctorId);
+        Doctor.findOne({ '_id': doctorId }, function (err, doctor) {
+            if (err) {
+                res.json({ success: false, msg: 'User Not Authorized' });
+            } else {
+                Clinic.findOne({ _id: clinicId }, function (err, clinic) {
+                    if (err) {
+                        res.json({ success: false, msg: 'Failed to Fetch Clinic Request' });
 
-        
-             }
-             else{
+                    }
+                    else {
+                        res.json({ success: true, msg: 'Clinic Fetched Successfully', data: clinic });
+                    }
+                });
+            }
+        })
+    } else {
+        var userId = req.body.userId;
+        User.findOne({ '_id': userId }, function (err, user) {
+            if (err) {
+                res.json({ success: false, msg: 'User Not Authorized' });
+            } else {
+                Clinic.findOne({ _id: clinicId }, function (err, clinic) {
+                    if (err) {
+                        res.json({ success: false, msg: 'Failed to Fetch Clinic Request' });
 
 
-                res.json({success: false, msg: 'Clinic Fetched Successfully',data:clinic});
+                    }
+                    else {
 
-             }
-         });
-        }
-    })
-   }
-   
 
+                        res.json({ success: false, msg: 'Clinic Fetched Successfully', data: clinic });
+
+                    }
+                });
+            }
+        })
+    }
 
 
 
 
-   
+
+
+
 
 });
 
-apiRoutes.post( '/addSlots',  function( req, res, next ) {
-    var doctorId=req.body.doctorId;
-    var clinicId=req.body.clinicId;
+apiRoutes.post('/addSlots', function (req, res, next) {
+    var doctorId = req.body.doctorId;
+    var clinicId = req.body.clinicId;
     var clinicDetails = req.body;
     var newSlot = clinicDetails.slotDetails
     var slot = JSON.parse(newSlot);
-    Doctor.findOne({'_id':doctorId},function (err,doctor){
-        if(err){
-            res.json({success: false, msg: 'Invalid User Id'});
-        }else{
-            Clinic.findOne({'_id':clinicId},function (err,clinic){
-                if(err){
-                    res.json({success: false, msg: 'Invalid Clinic Id'});
-                }else{  
+    Doctor.findOne({ '_id': doctorId }, function (err, doctor) {
+        if (err) {
+            res.json({ success: false, msg: 'Invalid User Id' });
+        } else {
+            Clinic.findOne({ '_id': clinicId }, function (err, clinic) {
+                if (err) {
+                    res.json({ success: false, msg: 'Invalid Clinic Id' });
+                } else {
                     var slotArray = [];
 
                     var slotArray = clinic.slots;
                     slot.forEach(element => {
                         slotArray.push(element);
                     });
-                    Clinic.update({'_id': clinicId}, { $set:{
-                        'slots':slotArray,
-                        }}, function(err, numberAffected, rawResponse) {
-                                if(err){
-                                    res.json({success: false, msg: 'Unable to update'});   
-                                }else{
-                                    Clinic.findOne({'_id':clinicId},function (err,clinic){
-                                        if(err){
-                                            res.json({success: false, msg: 'Invalid Clinic Id'});
-                                        }else{
-                                    res.json({success: true, msg: 'Slot Updated',data:clinic});  
+                    Clinic.update({ '_id': clinicId }, {
+                        $set: {
+                            'slots': slotArray,
+                        }
+                    }, function (err, numberAffected, rawResponse) {
+                        if (err) {
+                            res.json({ success: false, msg: 'Unable to update' });
+                        } else {
+                            Clinic.findOne({ '_id': clinicId }, function (err, clinic) {
+                                if (err) {
+                                    res.json({ success: false, msg: 'Invalid Clinic Id' });
+                                } else {
+                                    res.json({ success: true, msg: 'Slot Updated', data: clinic });
                                 }
-                            
+
                             })
                         }
+                    })
+                }
             })
-        }
-    })
-   
+
         }
     });
 });
 // get all clinic
 
-apiRoutes.post('/getAllClinic' , function(req,res){
+apiRoutes.post('/getAllClinic', function (req, res) {
 
-    var doctorId=req.body.doctorId;
-    if(doctorId){
-        Clinic.find({'doctorId':doctorId},function(err,clinic)        
-        {
-            if(err){
-                res.json({success:false,msg:'Unable to fetch Clinic'});
-            }else{
-                res.json({success:true,data:clinic});
-            }           
+    var doctorId = req.body.doctorId;
+    if (doctorId) {
+        Clinic.find({ 'doctorId': doctorId }, function (err, clinic) {
+            if (err) {
+                res.json({ success: false, msg: 'Unable to fetch Clinic' });
+            } else {
+                res.json({ success: true, data: clinic });
+            }
         });
     }
-    else{
-        res.json({success: false,msg:'Unable to fetch Token Authentication failed'});
+    else {
+        res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
     }
 });
 
 // cases api
 
-apiRoutes.post( '/addCase',  function( req, res, next ) {
+apiRoutes.post('/addCase', function (req, res, next) {
     var cases = req.body;
     var caseData = {
-        appointmentDate:cases.appointmentDate,
-        clinicName:cases.clinicName,
+        appointmentDate: cases.appointmentDate,
+        clinicName: cases.clinicName,
         patientName: cases.patientName,
-        patientMobile:cases.patientMobile,
+        patientMobile: cases.patientMobile,
         doctorName: cases.doctorName,
-        doctorMobile:cases.doctorMobile,
-        caseStatus:cases.caseStatus,
-        caseSubject:cases.caseSubject
+        doctorMobile: cases.doctorMobile,
+        caseStatus: cases.caseStatus,
+        caseSubject: cases.caseSubject
     }
-    Case.addCase(caseData,function(err, caseData){
-        if(err){
-            res.json({success: false, msg: 'Failed to add Request'});
+    Case.addCase(caseData, function (err, caseData) {
+        if (err) {
+            res.json({ success: false, msg: 'Failed to add Request' });
         }
-        else{
-            res.json({success:true,msg:'Case Added Successfully',data:caseData});
+        else {
+            res.json({ success: true, msg: 'Case Added Successfully', data: caseData });
         }
     });
 });
 
 //prescription api
 
-apiRoutes.post( '/addPrescription',  function( req, res, next ) {
+apiRoutes.post('/addPrescription', function (req, res, next) {
 
-    var patientId=req.body.patientId;
+    var patientId = req.body.patientId;
     var prescription = req.body;
     var medicines = JSON.parse(prescription.prescriptionData);
     var randomstring2 = require("randomstring");
     var prescriptionData = {
-        prescriptionId:randomstring2.generate(6),
-        patientId :patientId,
-        symptoms:prescription.symptoms,
-        remark:prescription.remark,
-        prescriptionData:medicines,
-        appointmentDate:prescription.appointmentDate,
+        prescriptionId: randomstring2.generate(6),
+        patientId: patientId,
+        symptoms: prescription.symptoms,
+        remark: prescription.remark,
+        prescriptionData: medicines,
+        appointmentDate: prescription.appointmentDate,
         patientFirstName: prescription.patientFirstName,
         patientMiddleName: prescription.patientMiddleName,
         patientLastName: prescription.patientLastName,
@@ -1053,115 +1065,116 @@ apiRoutes.post( '/addPrescription',  function( req, res, next ) {
         patientWeight: prescription.patientWeight,
         patientBp: prescription.patientBp,
         patientPulse: prescription.patientPulse,
-        patientMobile:prescription.patientMobile,
+        patientMobile: prescription.patientMobile,
         doctorName: prescription.doctorName,
-        doctorMobile:prescription.doctorMobile,
-        doctorId:prescription.doctorId,
+        doctorMobile: prescription.doctorMobile,
+        doctorId: prescription.doctorId,
     }
-Doctor.findOne({'_id':prescription.doctorId},function(err, doctor){
-if(err){
-    res.json({success: false,msg:'TokenAuth Failed'});
-}else{
-    Prescription.addPrescription(prescriptionData,function(err, prescriptionData){
-        if(err){
-            res.json({success: false, msg: 'Failed to add Request'});
-        }
-        else{
-            res.json({success:true,msg:'Prescription Added Successfully',data:prescriptionData});
+    Doctor.findOne({ '_id': prescription.doctorId }, function (err, doctor) {
+        if (err) {
+            res.json({ success: false, msg: 'TokenAuth Failed' });
+        } else {
+            Prescription.addPrescription(prescriptionData, function (err, prescriptionData) {
+                if (err) {
+                    res.json({ success: false, msg: 'Failed to add Request' });
+                }
+                else {
+                    res.json({ success: true, msg: 'Prescription Added Successfully', data: prescriptionData });
+                }
+            });
+
         }
     });
-    
-}
-});
- 
+
 
 });
 
 // update prescription
 
-apiRoutes.post('/updatePrescription', function(req, res){
+apiRoutes.post('/updatePrescription', function (req, res) {
     var prescription = req.body;
-   var doctorId=req.body.doctorId;   
-   var remark = req.body.remark;
-   var medicines = JSON.parse(prescription.prescriptionData);   
-   if(doctorId){
-       Prescription.update({doctorId:doctorId}, { $set:{
-           "prescriptionData":medicines,
-           "remark":remark,
-           
+    var doctorId = req.body.doctorId;
+    var remark = req.body.remark;
+    var medicines = JSON.parse(prescription.prescriptionData);
+    if (doctorId) {
+        Prescription.update({ doctorId: doctorId }, {
+            $set: {
+                "prescriptionData": medicines,
+                "remark": remark,
 
-       }}, function(err, numberAffected, rawResponse) {
-                   if(err){
-                   res.json({success: false,msg:'Prescription Failed To Update'});
-                   throw err;
-               }
-                   else{                       
-                       res.json({success: true,msg:'Prescription Updated Successfully'});
-                   }
-       });
-   
-   }
-   else{
-       res.json({success: false,msg:'Unable to fetch Token Authentication failed'});
-   }
+
+            }
+        }, function (err, numberAffected, rawResponse) {
+            if (err) {
+                res.json({ success: false, msg: 'Prescription Failed To Update' });
+                throw err;
+            }
+            else {
+                res.json({ success: true, msg: 'Prescription Updated Successfully' });
+            }
+        });
+
+    }
+    else {
+        res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
+    }
 });
 
 
 //Get prescription Patient
 
-apiRoutes.post( '/getPrescription',  function( req, res, next ) {
+apiRoutes.post('/getPrescription', function (req, res, next) {
     var isDoctor = req.body.isDoctor;
-    if(isDoctor){
-        var doctorId=req.body.doctorId;
-        Doctor.find({'_id':doctorId},function(err,doctor){
-            if(err){
-                res.json({success: false,msg:'TokenAuth Failed'});
-            }else{
-                Prescription.find({'doctorId':doctorId},function(err, prescriptionData){
-                    if(err){
-                        res.json({success: false, msg: 'Failed to add Request'});
+    if (isDoctor) {
+        var doctorId = req.body.doctorId;
+        Doctor.find({ '_id': doctorId }, function (err, doctor) {
+            if (err) {
+                res.json({ success: false, msg: 'TokenAuth Failed' });
+            } else {
+                Prescription.find({ 'doctorId': doctorId }, function (err, prescriptionData) {
+                    if (err) {
+                        res.json({ success: false, msg: 'Failed to add Request' });
                     }
-                    else{
-                        res.json({success:true,msg:'Prescription Fetched Successfully',data:prescriptionData});
+                    else {
+                        res.json({ success: true, msg: 'Prescription Fetched Successfully', data: prescriptionData });
                     }
                 });
             }
         })
-    }else{
+    } else {
 
-        var userId=req.body.userId;
+        var userId = req.body.userId;
         var contactNum = req.body.contactNum;
         console.log(userId);
         console.log(contactNum);
-        User.findOne({'contactNum':contactNum},function(err, user){
+        User.findOne({ 'contactNum': contactNum }, function (err, user) {
             console.log(user);
             console.log('Hey this is User');
-            if(err){
-                res.json({success: false,msg:'TokenAuth Failed'});
-            }else{
-                Prescription.find({'patientMobile':contactNum},function(err, prescriptionData){
-                    if(err){
-                        res.json({success: false, msg: 'Failed to add Request'});
-                    //	throw err;
+            if (err) {
+                res.json({ success: false, msg: 'TokenAuth Failed' });
+            } else {
+                Prescription.find({ 'patientMobile': contactNum }, function (err, prescriptionData) {
+                    if (err) {
+                        res.json({ success: false, msg: 'Failed to add Request' });
+                        //	throw err;
                     }
-                    else{
-                        res.json({success:true,msg:'Prescription Fetched Successfully',data:prescriptionData});
+                    else {
+                        res.json({ success: true, msg: 'Prescription Fetched Successfully', data: prescriptionData });
                     }
                 });
-                
+
             }
-            });
+        });
     }
-  
+
 
 });
 
- apiRoutes.post('/signupUser', route.signupUser);
- apiRoutes.post('/signupDoctor', route.signupDoctor);
- apiRoutes.post('/loginDoctor', route.loginDoctor);
+apiRoutes.post('/signupUser', route.signupUser);
+apiRoutes.post('/signupDoctor', route.signupDoctor);
+apiRoutes.post('/loginDoctor', route.loginDoctor);
 // Start the server
 // app.listen(port);
 
 // console.log('Server is running at  http://localhost:' + port);        
-        
-        
+
