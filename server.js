@@ -767,17 +767,6 @@ apiRoutes.post('/getBookedSlots', function (req, res) {
 
 apiRoutes.post('/getPatients', function (req, res) {
 
-    // var query = [
-    //     {
-    //       $addFields: { fullname: { $concat: ["$patientFirstName", " ", "$patientLastName"] } },
-    //     },
-    //     {
-    //       $match: {
-    //         fullname: { $regex: new RegExp(data.str, "i") },
-    //       },
-    //     }
-    // ];
-
     User.find({}, function (err, slot) {
         if (err) {
             console.log(err);
