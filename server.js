@@ -765,6 +765,72 @@ apiRoutes.post('/getBookedSlots', function (req, res) {
     }
 });
 
+apiRoutes.post('/getPatients', function (req, res) {
+
+    // var query = [
+    //     {
+    //       $addFields: { fullname: { $concat: ["$patientFirstName", " ", "$patientLastName"] } },
+    //     },
+    //     {
+    //       $match: {
+    //         fullname: { $regex: new RegExp(data.str, "i") },
+    //       },
+    //     }
+    // ];
+
+    User.find({}, function (err, slot) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.json({ success: true, data: slot });
+        }
+    });
+    
+});
+
+apiRoutes.post('/addPatients', function (req, res) {
+
+    console.log(req.body);
+
+    // var userId = req.body.userId;
+    var patientFirstName = req.body.firstName;
+    var patientLastName = req.body.lastName;
+    var patientMiddleName = '';
+    var patientAddress = '';
+    var patientEmailId = '';
+    var patientGender = 'Male';
+    var patientDob = req.body.dob;
+    var patientZipcode = '';
+
+    User.update({ "contactNum": req.body.contactNum }, {
+        $set: {
+            "patientFirstName": patientFirstName,
+            "patientLastName": patientLastName,
+            "patientMiddleName": patientMiddleName,
+            "patientAddress": patientAddress,
+            "emailId": patientEmailId,
+            "emailIdRegistered": false,
+            "patientZipcode": patientZipcode,
+            "patientGender": patientGender,
+            "patientDob": patientDob,
+            "contactNum": req.body.contactNum
+        }
+    }, { upsert : true },  function (err, numberAffected, rawResponse) {
+
+        User.find({  }, function (err, slot) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.json({ success: true, data: slot });
+            }
+        });
+    });
+
+    
+    
+});
+
+
 // Cancel Appointment api
 
 apiRoutes.post('/cancelAppointment', function (req, res) {
