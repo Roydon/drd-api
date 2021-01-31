@@ -745,6 +745,25 @@ apiRoutes.post('/getSlot', function (req, res) {
     }
 });
 
+apiRoutes.post('/getBookedSlots', function (req, res) {
+    var clinicId = req.body.clinicId;
+    var slotDate = req.body.dates;
+
+    console.log(slotDate);
+
+    if (clinicId) {
+        Appointment.find({ 'clinicId': clinicId, 'appointmentDate': { $in : slotDate } }, function (err, slot) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.json({ success: true, data: slot });
+            }
+        });
+    }
+    else {
+        res.json({ success: false, msg: 'Unable to fetch Token Authentication failed' });
+    }
+});
 
 // Cancel Appointment api
 
