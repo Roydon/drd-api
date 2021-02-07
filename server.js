@@ -120,8 +120,59 @@ const dbURI = process.env.DB_URL;
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false })
     .then((result) => {
-        app.listen(PORT, () => {
+        app.listen(PORT, async () => {
             console.log("Application Started in Port " + PORT)
+
+            
+            let d = await Doctor.findOne({emailId: "roydon.pereira@gmail.com", password: "password123"});
+            if(!d) {
+
+                var randomstring2 = require("randomstring");
+
+            var doctorData = {
+                doctorId: randomstring2.generate(8),
+                doctorName: "roydon pereira",
+                doctorMobile: "9876543210",
+                emailId: "roydon.pereira@gmail.com",
+                doctorAddress: "some address",
+                doctorSpeciality: "primary",
+                doctorExperience: "1",
+                password: "password123"
+        
+            }
+            Doctor.addDoctor(doctorData, function (err, doctorData) {
+                console.log(err)
+
+                console.log(doctorData._id.toString);
+
+
+                var clinicData = {
+                    clinicId: randomstring2.generate(8),
+                    clinicName: "clinic1",
+                    clinicAddress: "clinic1 adress",
+                    doctorId: doctorData._id.toString(),
+                    doctorName: "roydon",
+                    doctorMobile: 9876543210
+                }
+            
+                Clinic.addClinic(clinicData)
+
+                    var clinicData2 = {
+                        clinicId: randomstring2.generate(8),
+                        clinicName: "clinic2",
+                        clinicAddress: "clinic2 adress",
+                        doctorId: doctorData._id.toString(),
+                        doctorName: "roydon",
+                        doctorMobile: 9876543210
+                    }
+                
+                    Clinic.addClinic(clinicData2);
+
+
+            });
+        }
+
+
         })
     })
     .catch((err) => console.log(err));
@@ -462,8 +513,81 @@ apiRoutes.post('/updatePatientProfile', function (req, res) {
 
 });
 
+apiRoutes.post('/verify-sms', async function(req, res) {
+    req.body.contactNum = req.body.contactNum.toString().replace("+91", "");
+    var otp = parseInt(req.body.otp);
+
+    const query = { "contactNum": req.body.contactNum, otp };
+    console.log(query);
+
+   
+
+    User.findOne(query, function (err, user) {
 
 
+        console.log(user)
+
+       
+
+            if (user) {
+                User.update({ "contactNum": req.body.contactNum }, {
+                    $set: {
+                        isMobileVerified : true
+                    }
+                }, { multi: true},  function (err, numberAffected, rawResponse) {
+            
+                    
+                });
+                
+                res.json({ success: true, msg: 'Valid OTP', data: user });
+            }
+            else {
+                res.json({ success: false, msg: 'Invalid OTP', res: err });
+            }
+        
+    });
+
+
+});
+
+apiRoutes.post('/resend-sms', async function(req, res) {
+    req.body.contactNum = req.body.contactNum.toString().replace("+91", "");
+
+    var otp = Math.floor(100000 * Math.random() + 900000);
+    console.log(otp);
+
+    const accountSid = 'ACcf4efb1372b42f24b51fea296d534d7f';
+    const authToken = '9dc61969ee0a833e0ba81c2c63bb36c2';
+    const client = require('twilio')(accountSid, authToken);
+    const country_code = "+91";
+
+    
+    let to_send = req.body.contactNum.toString();
+    if(to_send.indexOf(country_code) >= 0){}
+    else {to_send = country_code + to_send  }
+
+    const sms_bofy = {
+        body: 'Your 6 digit code for app is - ' + otp,
+        from: '+17744625692',
+        to: to_send
+    };
+
+    console.log(sms_bofy);
+
+    client.messages.create(sms_bofy).then(message => console.log(message.sid));
+
+    User.update({ "contactNum": req.body.contactNum }, {
+        $set: {
+            otp:otp
+        }
+    }, { multi: true},  function (err, numberAffected, rawResponse) {
+
+        res.json({ success: true });
+        
+    });
+
+
+})
 
 // get patient api
 
@@ -471,6 +595,9 @@ apiRoutes.post('/getPatient', function (req, res) {
     var contactNum = req.body.contactNum;
     if (contactNum != undefined) {
         User.findOne({ 'contactNum': contactNum }, function (err, user) {
+            
+            console.log(user)
+
             if (user) {
                 res.json({ success: true, msg: 'Patient Request Sent Successfully', data: user });
             }
@@ -777,7 +904,13 @@ apiRoutes.post('/getPatients', function (req, res) {
     
 });
 
-apiRoutes.post('/addPatients', function (req, res) {
+apiRoutes.post('/addPatients', async function (req, res) {
+
+    console.log(req.body);
+
+    if(req.body.dob){
+        req.body.dob = moment(new Date(req.body.dob)).format('DD/MM/YYYY');
+    }
 
     console.log(req.body);
 
@@ -791,7 +924,43 @@ apiRoutes.post('/addPatients', function (req, res) {
     var patientDob = req.body.dob;
     var patientZipcode = '';
 
-    User.update({ "contactNum": req.body.contactNum }, {
+    req.body.contactNum = req.body.contactNum.replace("+91", "");
+
+
+    let existing = await User.findOne({ "contactNum": req.body.contactNum , "patientFirstName": patientFirstName, "patientDob": patientDob })
+    if(existing) {
+        res.json({ success: false, msg: "Patient already exist with these details , Try search with name , dob or mobile no" });
+        return;
+    } 
+
+    var otp = Math.floor(100000 * Math.random() + 900000);
+    console.log(otp);
+
+
+
+    const accountSid = 'ACcf4efb1372b42f24b51fea296d534d7f';
+    const authToken = '9dc61969ee0a833e0ba81c2c63bb36c2';
+    const client = require('twilio')(accountSid, authToken);
+    const country_code = "+91";
+
+    
+    let to_send = req.body.contactNum.toString();
+    if(to_send.indexOf(country_code) >= 0){}
+    else {to_send = country_code + to_send  }
+
+    const sms_bofy = {
+        body: 'Your 6 digit code for app is - ' + otp,
+        from: '+17744625692',
+        to: to_send
+    };
+
+    console.log(sms_bofy);
+
+
+    client.messages.create(sms_bofy).then(message => console.log(message.sid));
+
+
+    User.update({ "contactNum": req.body.contactNum, "patientFirstName": patientFirstName, "patientDob": patientDob }, {
         $set: {
             "patientFirstName": patientFirstName,
             "patientLastName": patientLastName,
@@ -802,15 +971,30 @@ apiRoutes.post('/addPatients', function (req, res) {
             "patientZipcode": patientZipcode,
             "patientGender": patientGender,
             "patientDob": patientDob,
-            "contactNum": req.body.contactNum
+            "contactNum": req.body.contactNum,
+            otp:otp
         }
     }, { upsert : true },  function (err, numberAffected, rawResponse) {
+
+
+        User.update({ "contactNum": req.body.contactNum }, {
+            $set: {
+                otp:otp
+            }
+        }, { multi: true},  function (err, numberAffected, rawResponse) {
+    
+            
+        });
 
         User.find({  }, function (err, slot) {
             if (err) {
                 console.log(err);
             } else {
+
+
                 res.json({ success: true, data: slot });
+
+
             }
         });
     });

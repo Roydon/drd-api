@@ -49,6 +49,7 @@
     "request-promise": "^4.2.4",
     "sendgrid": "^4.1.0",
     "shortid": "^2.2.6",
-    "social-login": "^0.2.8"
+    "social-login": "^0.2.8",
+    "twilio": "^3.55.1"
   }
 }

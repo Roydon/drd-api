@@ -93,8 +93,18 @@ var UserSchema = new Schema({
         type:Boolean
     },
    
+    isMobileVerified:
+    {
+        type:Boolean,
+        default: false
+    },
   
-    
+    isEmailVerified:
+    {
+        type:Boolean,
+        default: false
+    },
+    otp: String,
     
      
      
@@ -145,6 +155,9 @@ UserSchema.statics.findOrCreate = function findOrCreate(profile, cb){
         }
     });
 };
+
+UserSchema.index({contactNum: 1 });
+UserSchema.index({contactNum: 1, patientFirstName: 1, patientDob: 1 }, {unique: true });
 
  
 module.exports = mongoose.model('User', UserSchema);
