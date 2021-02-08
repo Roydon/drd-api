@@ -556,8 +556,8 @@ apiRoutes.post('/resend-sms', async function(req, res) {
     var otp = Math.floor(100000 * Math.random() + 900000);
     console.log(otp);
 
-    const accountSid = 'ACcf4efb1372b42f24b51fea296d534d7f';
-    const authToken = '9dc61969ee0a833e0ba81c2c63bb36c2';
+    const accountSid = '';
+    const authToken = '';
     const client = require('twilio')(accountSid, authToken);
     const country_code = "+91";
 
@@ -938,8 +938,8 @@ apiRoutes.post('/addPatients', async function (req, res) {
 
 
 
-    const accountSid = 'ACcf4efb1372b42f24b51fea296d534d7f';
-    const authToken = '9dc61969ee0a833e0ba81c2c63bb36c2';
+    const accountSid = '';
+    const authToken = '';
     const client = require('twilio')(accountSid, authToken);
     const country_code = "+91";
 
