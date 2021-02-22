@@ -1,5 +1,8 @@
 require('dotenv').config()
 console.log(process.env.DB_URL);
+
+const PASSWORD_SALT = process.env.PASSWORD_SALT;
+
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
@@ -29,6 +32,9 @@ var moment = require('moment');
 var User = require('./app/models/user');
 app.use(cors());
 
+
+
+var redis_client = require('./redis').client;
 
 
 //insta credential
@@ -194,6 +200,43 @@ app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, './public', 'index.html'));
 
 });
+
+var jwt = require('jsonwebtoken');
+app.use(function (req, res, next) {
+    const byPassURLS = ["/api/loginDoctor", "/api/signupUser"]
+    if(byPassURLS.indexOf(req.originalUrl) >= 0) {
+      next()
+    } else {
+        var token = req.headers['x-access-token'];
+        if(token) {
+            
+            redis_client.get(token, function(err, reply) {
+                //console.log(err);
+                if (err) {
+                  console.log("returnign");
+                  return res.sendStatus(403);
+                }
+                if (reply) {
+                    console.log(reply);
+                    res.user = reply;
+                    jwt.verify(token, PASSWORD_SALT, (err, user) => {
+                        if (err) {
+                            return res.sendStatus(403);
+                        }
+                        console.log(user);
+                        // req.user = user;
+                        next();
+                    });
+                } else {
+                    res.sendStatus(401);
+                }
+            })
+            // next()
+        } else {
+            res.sendStatus(401);
+        }
+    }
+})
 
 // connect the api routes under /api/*
 app.use('/api', apiRoutes);

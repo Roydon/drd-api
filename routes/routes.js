@@ -6,7 +6,9 @@ var jwt         = require('jwt-simple');
 var config      = require('../config/database'); 
 
 var randomstring = require("randomstring");
+const PASSWORD_SALT = process.env.PASSWORD_SALT;
 
+var redis_client = require('../redis').client;
 
 var ses = require('node-ses')
   , client = ses.createClient({ key: 'AKIAIU3WW5LJIXFEPR6Q', secret: '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' });
@@ -118,7 +120,11 @@ exports.loginDoctor = function(req, res)  {
     
     } else {
       if(doctor && password==doctor.password){
-        res.json({success: true, msg: 'successfully logged in',doctor:doctor});
+        var jwt = require('jsonwebtoken');
+        var objD = { type: 'DOCTOR', emailId }
+        var token = jwt.sign(objD, PASSWORD_SALT);
+        redis_client.set(token, JSON.stringify(objD));
+        res.json({success: true, msg: 'successfully logged in',doctor:doctor, token });
       } else {
         res.json({success: false, msg: 'Invalid username and password',doctor:doctor});
       }
