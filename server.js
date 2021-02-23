@@ -24,6 +24,7 @@ var Appointment = require('./app/models/appointment');
 var Prescription = require('./app/models/prescription');
 var Feedback = require('./app/models/feedback');
 var Search = require('./app/models/search');
+var Medicine = require('./app/models/medicines');
 var randomstring = require("randomstring");
 var randomNumber = require('random-number');
 var nodemailer = require('nodemailer');
@@ -130,6 +131,46 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useCr
         app.listen(PORT, async () => {
             console.log("Application Started in Port " + PORT)
 
+            var ifadd = false;
+
+            if(ifadd){
+                var terms = [
+                    { searchTerm:'Cough', category: 'Cold' },
+                    { searchTerm:'Cold',  category: 'Cold' },
+                    { searchTerm:'Fever', category:'Fever' },
+                    { searchTerm:'Running Nose', category:'Cold' },
+                    { searchTerm:'Body Ache', category:'Fever' },
+                ]
+                for(var i12 = 0 ; i12 < terms.length; i12++){
+                    var searchData = terms[i12];
+                    Search.addSearch(searchData, function (err, searchData) {
+                        // if (err) {
+                        //     res.json({ success: false, msg: 'Failed to add Request' });
+                        // }
+                        // else {
+                        //     res.json({ success: true, msg: 'Search Added Successfully', data: searchData });
+                        // }
+                    });
+                }  
+
+                var terms1 = [
+                    { name:'Dolo', category: 'Fever' },
+                    { name:'Paracetamol',  category: 'Fever' },
+                    { name:'Bicasul', category:'Fever' }
+                ]
+                for(var i121 = 0 ; i121 < terms1.length; i121++){
+                    var searchData1 = terms1[i121];
+                    Medicine.addMedicine(searchData1, function (err, searchData) {
+                        // if (err) {
+                        //     res.json({ success: false, msg: 'Failed to add Request' });
+                        // }
+                        // else {
+                        //     res.json({ success: true, msg: 'Search Added Successfully', data: searchData });
+                        // }
+                    });
+                }  
+
+            }
             
             let d = await Doctor.findOne({emailId: "roydon.pereira@gmail.com", password: "password123"});
             if(!d) {
@@ -309,6 +350,19 @@ apiRoutes.post('/getSearchTerm', function (req, res) {
     });
 
 });
+
+apiRoutes.post('/getMedicines', function (req, res) {
+    Medicine.find({}, function (err, searchData) {
+        if (err) {
+            res.json({ success: false, msg: 'Unable To Fetch Searchterm', res: err });
+        } else {
+            res.json({ success: true, msg: 'Searchterm Request Sent Successfully', data: searchData });
+        }
+    });
+
+});
+
+
 
 //add doctor api
 
