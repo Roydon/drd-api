@@ -45,7 +45,8 @@ var multer = require('multer');
 
 
 
-
+const accountSid = '';
+const authToken = '';
 
 
 var moment = require('moment');
@@ -203,7 +204,13 @@ app.get('/', function (req, res) {
 
 var jwt = require('jsonwebtoken');
 app.use(function (req, res, next) {
-    const byPassURLS = ["/api/loginDoctor", "/api/signupUser"]
+    const byPassURLS = [
+        "/api/loginDoctor", 
+        "/api/signupUser",
+        "/api/getPatient",
+        "/api/verify-sms",
+        "/api/resend-sms"
+    ];
     if(byPassURLS.indexOf(req.originalUrl) >= 0) {
       next()
     } else {
@@ -219,14 +226,15 @@ app.use(function (req, res, next) {
                 if (reply) {
                     console.log(reply);
                     res.user = reply;
-                    jwt.verify(token, PASSWORD_SALT, (err, user) => {
-                        if (err) {
-                            return res.sendStatus(403);
-                        }
-                        console.log(user);
-                        // req.user = user;
-                        next();
-                    });
+                    next();
+                    // jwt.verify(token, PASSWORD_SALT, (err, user) => {
+                    //     if (err) {
+                    //         return res.sendStatus(403);
+                    //     }
+                    //     console.log(user);
+                    //     // req.user = user;
+                    //     next();
+                    // });
                 } else {
                     res.sendStatus(401);
                 }
@@ -573,16 +581,24 @@ apiRoutes.post('/verify-sms', async function(req, res) {
        
 
             if (user) {
-                User.update({ "contactNum": req.body.contactNum }, {
-                    $set: {
-                        isMobileVerified : true
-                    }
-                }, { multi: true},  function (err, numberAffected, rawResponse) {
-            
-                    
-                });
+
+                var minute = 1000 * 60 *10;
+                if(user.otptime && (user.otptime + minute) > new Date().getTime()) {
+
+                    User.update({ "contactNum": req.body.contactNum }, {
+                        $set: {
+                            isMobileVerified : true
+                        }
+                    }, { multi: true},  function (err, numberAffected, rawResponse) {
                 
-                res.json({ success: true, msg: 'Valid OTP', data: user });
+                        
+                    });
+                    
+                    res.json({ success: true, msg: 'Valid OTP', data: user });
+                }
+                else {
+                    res.json({ success: false, msg: 'OTP has been expired', res: err });
+                }
             }
             else {
                 res.json({ success: false, msg: 'Invalid OTP', res: err });
@@ -599,16 +615,14 @@ apiRoutes.post('/resend-sms', async function(req, res) {
     var otp = Math.floor(100000 * Math.random() + 900000);
     console.log(otp);
 
-    const accountSid = '';
-    const authToken = '';
     const client = require('twilio')(accountSid, authToken);
-    const country_code = "+91";
-
+    const country_code = "+91";  
+    
     
     let to_send = req.body.contactNum.toString();
     if(to_send.indexOf(country_code) >= 0){}
     else {to_send = country_code + to_send  }
-
+    
     const sms_bofy = {
         body: 'Your 6 digit code for app is - ' + otp,
         from: '+17744625692',
@@ -621,7 +635,8 @@ apiRoutes.post('/resend-sms', async function(req, res) {
 
     User.update({ "contactNum": req.body.contactNum }, {
         $set: {
-            otp:otp
+            otp:otp,
+            otptime: new Date().getTime()
         }
     }, { multi: true},  function (err, numberAffected, rawResponse) {
 
@@ -979,10 +994,6 @@ apiRoutes.post('/addPatients', async function (req, res) {
     var otp = Math.floor(100000 * Math.random() + 900000);
     console.log(otp);
 
-
-
-    const accountSid = '';
-    const authToken = '';
     const client = require('twilio')(accountSid, authToken);
     const country_code = "+91";
 
@@ -1015,14 +1026,16 @@ apiRoutes.post('/addPatients', async function (req, res) {
             "patientGender": patientGender,
             "patientDob": patientDob,
             "contactNum": req.body.contactNum,
-            otp:otp
+            otp:otp,
+            otptime: new Date().getTime()
         }
     }, { upsert : true },  function (err, numberAffected, rawResponse) {
 
 
         User.update({ "contactNum": req.body.contactNum }, {
             $set: {
-                otp:otp
+                otp:otp,
+                otptime: new Date().getTime()
             }
         }, { multi: true},  function (err, numberAffected, rawResponse) {
     

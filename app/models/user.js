@@ -107,7 +107,7 @@ var UserSchema = new Schema({
     otp: String,
     
      
-     
+     otptime: Number
                             
     
     
