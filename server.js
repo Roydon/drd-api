@@ -1016,6 +1016,33 @@ apiRoutes.post('/getPatients', function (req, res) {
     
 });
 
+
+function sendSMS(contactNum, otp) {
+    try {
+        const client = require('twilio')(accountSid, authToken);
+        const country_code = "+91";
+    
+        
+        let to_send = contactNum.toString();
+        if(to_send.indexOf(country_code) >= 0){}
+        else {to_send = country_code + to_send  }
+    
+        const sms_bofy = {
+            body: 'Your 6 digit code for app is - ' + otp,
+            from: '+17744625692',
+            to: to_send
+        };
+    
+        console.log(sms_bofy);
+    
+    
+        client.messages.create(sms_bofy).then(message => console.log(message.sid));
+    }
+    catch(err){
+
+    }
+}
+
 apiRoutes.post('/addPatients', async function (req, res) {
 
     console.log(req.body);
@@ -1048,24 +1075,8 @@ apiRoutes.post('/addPatients', async function (req, res) {
     var otp = Math.floor(100000 * Math.random() + 900000);
     console.log(otp);
 
-    const client = require('twilio')(accountSid, authToken);
-    const country_code = "+91";
 
-    
-    let to_send = req.body.contactNum.toString();
-    if(to_send.indexOf(country_code) >= 0){}
-    else {to_send = country_code + to_send  }
-
-    const sms_bofy = {
-        body: 'Your 6 digit code for app is - ' + otp,
-        from: '+17744625692',
-        to: to_send
-    };
-
-    console.log(sms_bofy);
-
-
-    client.messages.create(sms_bofy).then(message => console.log(message.sid));
+    sendSMS(req.body.contactNum, otp)
 
 
     User.update({ "contactNum": req.body.contactNum, "patientFirstName": patientFirstName, "patientDob": patientDob }, {
